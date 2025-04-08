@@ -93,10 +93,11 @@ namespace Selu383.SP25.P03.Api
                 SeedTheaters.Initialize(scope.ServiceProvider);
                 await SeedRoles.Initialize(scope.ServiceProvider);
                 await SeedUsers.Initialize(scope.ServiceProvider);
-                SeedHalls.Initialize(scope.ServiceProvider);
                 SeedMovies.Initialize(scope.ServiceProvider);
-                SeedShowtimes.Initialize(scope.ServiceProvider);
                 SeedFoodData.Initialize(scope.ServiceProvider);
+                await SeedHalls.Initialize(scope.ServiceProvider);
+                await SeedShowtimes.Initialize(scope.ServiceProvider);
+                await SeedTickets.Initialize(scope.ServiceProvider);
             }
 
             // Swagger Setup
