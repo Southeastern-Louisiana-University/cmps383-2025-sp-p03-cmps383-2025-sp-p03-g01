@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Data;
 using Selu383.SP25.P03.Api.Features.Reviews;
+using Selu383.SP25.P03.Api.Features.Theaters;
 using Selu383.SP25.P03.Api.Features.Users;
 
 namespace Selu383.SP25.P03.Api.Controllers
@@ -21,8 +22,9 @@ namespace Selu383.SP25.P03.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<List<ReviewDto>>> GetAll()
         {
-            var reviews = await dataContext.Set<Review>()
+            var reviews = await dataContext.Set<ReviewGetDto>()
                 .Include(x => x.User)
+                .Include(x => x.Theater)
                 .ToListAsync();
 
             return Ok(reviews.Select(x => new ReviewDto
@@ -34,6 +36,12 @@ namespace Selu383.SP25.P03.Api.Controllers
                 {
                     Id = x.User.Id,
                     UserName = x.User.UserName
+                },
+                Theater = new TheaterDto
+                { 
+                    Id = x.Theater.Id,
+                    Name = x.Theater.Name,
+                    Address = x.Theater.Address
                 }
             }).ToList());
         }
@@ -41,8 +49,9 @@ namespace Selu383.SP25.P03.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ReviewDto>> GetReviewById(int id)
         {
-            var review = await dataContext.Set<Review>()
+            var review = await dataContext.Set<ReviewGetDto>()
                 .Include(x => x.User)
+                .Include(x => x.Theater)
                 .Where(x => x.Id == id)
                 .Select(x => new ReviewDto
                 {
@@ -53,6 +62,12 @@ namespace Selu383.SP25.P03.Api.Controllers
                     {
                         Id = x.User.Id,
                         UserName = x.User.UserName
+                    },
+                    Theater = new TheaterDto
+                    {
+                        Id = x.Theater.Id,
+                        Name = x.Theater.Name,
+                        Address = x.Theater.Address
                     }
                 }).FirstOrDefaultAsync();
 
@@ -83,14 +98,15 @@ namespace Selu383.SP25.P03.Api.Controllers
                 return BadRequest("Review content cannot be empty.");
             }
 
-            var review = new Review
+            var review = new ReviewGetDto
             {
                 UserId = dto.UserId,
+                TheaterId = dto.TheaterId,
                 review = dto.review,
                 Rating = dto.Rating
             };
 
-            dataContext.Set<Review>().Add(review);
+            dataContext.Set<ReviewGetDto>().Add(review);
             await dataContext.SaveChangesAsync();
             return CreatedAtAction(nameof(GetReviewById), new { id = review.Id }, review);
         }
@@ -104,7 +120,7 @@ namespace Selu383.SP25.P03.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            var review = await dataContext.Set<Review>().FirstOrDefaultAsync(x => x.Id == id);
+            var review = await dataContext.Set<ReviewGetDto>().FirstOrDefaultAsync(x => x.Id == id);
 
             if (review == null)
             {
@@ -144,7 +160,7 @@ namespace Selu383.SP25.P03.Api.Controllers
         [Authorize]
         public async Task<ActionResult> DeleteReview(int id)
         {
-            var review = await dataContext.Set<Review>().FirstOrDefaultAsync(x => x.Id == id);
+            var review = await dataContext.Set<ReviewGetDto>().FirstOrDefaultAsync(x => x.Id == id);
 
             if (review == null)
             {
@@ -162,7 +178,7 @@ namespace Selu383.SP25.P03.Api.Controllers
                 return Forbid();
             }
 
-            dataContext.Set<Review>().Remove(review);
+            dataContext.Set<ReviewGetDto>().Remove(review);
             await dataContext.SaveChangesAsync();
 
             return Ok();

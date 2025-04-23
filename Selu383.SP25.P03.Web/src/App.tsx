@@ -31,6 +31,7 @@ import "./index.css";
 import CartPage from "./pages/CartPage";
 import OrderSummary from "./pages/OrderSummary";
 import ThankYouPage from "./pages/ThankYouPage";
+import ReviewsPage from "./pages/ReviewsPage";
 
 
 const App = () => {
@@ -61,6 +62,7 @@ const App = () => {
                     <Route path="/cart" element={<CartPage />}/>
                     <Route path="/payment" element={<Payment />}/>
                     <Route path="/thankyou" element={<ThankYouPage />} />
+                    <Route path="/theaters/:id/reviews" element={<ReviewsPage />} />
                     
                     {/* Admin Routes */}
                     <Route path="/admin-dashboard" element={<AdminDashboard />} />

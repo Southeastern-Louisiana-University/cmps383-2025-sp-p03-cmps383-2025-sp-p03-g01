@@ -1,4 +1,6 @@
-﻿namespace Selu383.SP25.P03.Api.Features.Theaters
+﻿using Selu383.SP25.P03.Api.Features.Reviews;
+
+namespace Selu383.SP25.P03.Api.Features.Theaters
 {
     public class TheaterDto
     {
@@ -7,5 +9,6 @@
         public required string Address { get; set; }
         public int SeatCount { get; set; }
         public int? ManagerId { get; set; }
+        public List<ReviewGetDto> Reviews { get; set; }
     }
 }

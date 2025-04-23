@@ -5,7 +5,7 @@ import axios from "axios";
 const Register = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [username, setUsername] = useState(""); // ✅ Correct casing
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -13,16 +13,31 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const isValidPassword = (pwd: string) => {
+    const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+    return regex.test(pwd);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      setLoading(false);
+    if (!firstName || !lastName || !username || !email || !password || !confirmPassword) {
+      setError("All fields are required.");
       return;
     }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (!isValidPassword(password)) {
+      setError("Password must be at least 8 characters, include an uppercase letter, a number, and a special character.");
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const clientUri = window.location.origin;
@@ -32,7 +47,7 @@ const Register = () => {
         {
           firstName,
           lastName,
-          username, // ✅ CORRECT KEY (was `userName`)
+          username,
           email,
           password,
           roles: ["User"],
@@ -47,8 +62,12 @@ const Register = () => {
         if (err.response?.status === 400) {
           if (err.response?.data?.includes("Email is already taken")) {
             setError("Email is already in use. Please try another one.");
+          } else if (err.response?.data?.includes("Username is already taken")) {
+            setError("Username is already in use. Please try another one.");
+          } else if (err.response?.data?.includes("Password must")) {
+            setError(err.response.data);
           } else {
-            setError("Registration failed. Please check the form and try again.");
+            setError("Registration failed. Please check your information and try again.");
           }
         } else {
           setError("Something went wrong. Please try again later.");
@@ -134,7 +153,7 @@ const Register = () => {
         </form>
 
         <div className="mt-2 text-center text-gray-400">
-          Already have an account?{" "}
+          Already have an account? {" "}
           <a
             href="/login"
             className="text-red-400 hover:text-red-500 transition"

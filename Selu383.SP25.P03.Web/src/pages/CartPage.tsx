@@ -19,10 +19,19 @@ const CartPage: React.FC = () => {
   const [guestEmail, setGuestEmail] = useState("");
   const [guestPassword, setGuestPassword] = useState("");
   const [showGuestEmailInput, setShowGuestEmailInput] = useState(false);
+  const [error, setError] = useState("");
+  const isValidPassword = (pwd: string) => {
+    const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+    return regex.test(pwd);
+  };
+
+  const isValidEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
+
   const { user, isAuthenticated } = useAuth();
 
-  const userIdFromQuery = searchParams.get('userId');
+  const FromQuery = searchParams.get('userId');
   const userId = userIdFromQuery ? parseInt(userIdFromQuery) : (user ? user.id : null);
+
 
 
   const formatDateTime = (isoString: string): string => {
@@ -143,15 +152,25 @@ const CartPage: React.FC = () => {
     }
 
   const handleCheckout = async () => {
-    if (!isAuthenticated && (!guestEmail || !guestPassword)) {
-      setShowGuestEmailInput(true);
-      return;
-    }
+    setError("");
 
-    if (!isAuthenticated && (!guestEmail.includes("@") || guestPassword.length < 6)) {
-      alert("Please enter a valid email and password (min 6 characters).");
+    if (!isAuthenticated) {
+      if (!guestEmail || !guestPassword) {
+        setShowGuestEmailInput(true);
+        setError("Email and password are required.");
+        return;
+      }
 
-      return;
+      if (!isValidEmail(guestEmail)) {
+        setError("Please enter a valid email address.");
+        return;
+      }
+
+      if (!isValidPassword(guestPassword)) {
+        setError("Password must be at least 8 characters, include an uppercase letter, a number, and a special character.");
+        return;
+      }
+
     }
 
     try {
@@ -191,13 +210,11 @@ const CartPage: React.FC = () => {
         }
       }
 
-      // Step 1: Flatten all ticket and food items
       const services: any[] = [];
 
       for (const order of cartList) {
         const { showtime, selectedSeats, foodCart } = order;
 
-        // Add each ticket as a separate service
         for (const seat of selectedSeats) {
           services.push({
             name: `${showtime.movieTitle} - Seat ${seat}`,
@@ -205,7 +222,6 @@ const CartPage: React.FC = () => {
           });
         }
 
-        // Add each food item
         Object.values(foodCart || {}).forEach((foodItem: any) => {
           services.push({
             name: foodItem.foodItem.name,
@@ -369,31 +385,32 @@ const CartPage: React.FC = () => {
               </div>
 
               {!isAuthenticated && showGuestEmailInput && (
-              <div className="mt-2 space-y-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300">Guest Email:</label>
-                  <input
-                    type="email"
-                    value={guestEmail}
-                    onChange={(e) => setGuestEmail(e.target.value)}
-                    className="w-full px-4 py-2 rounded-md bg-gray-800 text-white border border-gray-600 focus:border-red-500 outline-none mb-3"
-                    placeholder="guest@example.com"
-                  />
+                <div className="mt-4 space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300">Guest Email</label>
+                    <input
+                      type="email"
+                      value={guestEmail}
+                      onChange={(e) => setGuestEmail(e.target.value)}
+                      placeholder="guest@example.com"
+                      className="w-full px-4 py-2 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:border-red-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300">Create Password</label>
+                    <input
+                      type="password"
+                      value={guestPassword}
+                      onChange={(e) => setGuestPassword(e.target.value)}
+                      placeholder="Password"
+                      className="w-full px-4 py-2 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:border-red-500"
+                    />
+                  </div>
+                  {error && <p className="text-red-500 text-sm pt-1">{error}</p>}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300">Create Password:</label>
-                  <input
-                    type="password"
-                    value={guestPassword}
-                    onChange={(e) => setGuestPassword(e.target.value)}
-                    className="w-full px-4 py-2 rounded-md bg-gray-800 text-white border border-gray-600 focus:border-red-500 outline-none mb-3"
-                    placeholder="Enter password"
-                  />
-                </div>
-              </div>
-            )}
-
+              )}
             </div>
+
 
             {/* Action Buttons */}
             <div className="flex flex-wrap justify-between mt-4 gap-4">

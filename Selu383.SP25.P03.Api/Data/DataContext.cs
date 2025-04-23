@@ -22,7 +22,7 @@ namespace Selu383.SP25.P03.Api.Data
         public DbSet<Showtime> Showtimes { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<Hall> Halls { get; set; }
-        public DbSet<Review> Reviews { get; set; }
+        public DbSet<ReviewGetDto> Reviews { get; set; }
         public DbSet<FoodMenu> FoodMenus { get; set; }
         public DbSet<FoodItem> FoodItems { get; set; }
         public DbSet<FoodMenuItem> FoodMenuItems { get; set; }

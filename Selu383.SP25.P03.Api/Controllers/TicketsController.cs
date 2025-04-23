@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Selu383.SP25.P03.Api.Controllers
@@ -242,6 +243,11 @@ namespace Selu383.SP25.P03.Api.Controllers
                         return BadRequest("Email and password are required for guest users.");
                     }
 
+                    if (!IsValidPassword(dto.Password))
+                    {
+                        return BadRequest("Password must be at least 8 characters long, contain an uppercase letter, a number, and a special character.");
+                    }
+
                     var guestUser = new User
                     {
                         UserName = $"guest{DateTime.UtcNow.Ticks}",
@@ -259,23 +265,9 @@ namespace Selu383.SP25.P03.Api.Controllers
 
                     await signInManager.SignInAsync(guestUser, isPersistent: false);
                     user = guestUser;
-
                     userId = guestUser.Id;
 
-                    var subject = "Welcome to Lion's Den Theaters";
-                    var body = $@"
-                            <div style='font-family:Segoe UI, sans-serif; background-color:#fff8f0; padding:20px; border-radius:10px; border:1px solid #ffe0b3; max-width:500px; margin:auto;'>
-                                <h2 style='color:#c0392b;'>🎟️ Welcome to Lion's Den Theaters</h2>
-                                <p style='font-size:16px; color:#333;'>Dear {guestUser.FirstName},</p>
-                                <p style='font-size:16px; color:#333;'>We're absolutely thrilled to have you join our community of movie lovers! 🎉</p>
-                                <p style='font-size:16px; color:#333;'>Get ready to enjoy the magic of cinema, special treats, and unforgettable moments.</p>
-                                <p style='font-size:16px; color:#333;'>Your Guest Account Username is {guestUser.UserName}</p>
-                                <p style='font-size:16px; color:#333;'>Warm regards,</p>
-                                <p style='font-weight:bold; color:#c0392b;'>The Lion's Den Team 🦁</p>
-                            </div>";
-
-                    var message = new Message(new[] { user.Email }, subject, body);
-                    await emailSender.SendEmailAsync(message);
+                    SendWelcomeEmail(user.FirstName, user.UserName, user.Email);
                 }
 
                 var showtime = await showtimes
@@ -663,6 +655,30 @@ namespace Selu383.SP25.P03.Api.Controllers
                 .ToListAsync();
 
             return Ok(result);
+        }
+
+        private bool IsValidPassword(string password)
+        {
+            var regex = new Regex(@"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$");
+            return regex.IsMatch(password);
+        }
+
+        private async void SendWelcomeEmail(string firstName, string userName, string email)
+        {
+            var subject = "Welcome to Lion's Den Theaters";
+            var body = $@"
+                            <div style='font-family:Segoe UI, sans-serif; background-color:#fff8f0; padding:20px; border-radius:10px; border:1px solid #ffe0b3; max-width:500px; margin:auto;'>
+                                <h2 style='color:#c0392b;'>🎟️ Welcome to Lion's Den Theaters</h2>
+                                <p style='font-size:16px; color:#333;'>Dear {firstName},</p>
+                                <p style='font-size:16px; color:#333;'>We're absolutely thrilled to have you join our community of movie lovers! 🎉</p>
+                                <p style='font-size:16px; color:#333;'>Get ready to enjoy the magic of cinema, special treats, and unforgettable moments.</p>
+                                <p style='font-size:16px; color:#333;'>Your Guest Account Username is {userName}</p>
+                                <p style='font-size:16px; color:#333;'>Warm regards,</p>
+                                <p style='font-weight:bold; color:#c0392b;'>The Lion's Den Team 🦁</p>
+                            </div>";
+
+            var message = new Message(new[] { email }, subject, body);
+            await emailSender.SendEmailAsync(message);
         }
     }
 }

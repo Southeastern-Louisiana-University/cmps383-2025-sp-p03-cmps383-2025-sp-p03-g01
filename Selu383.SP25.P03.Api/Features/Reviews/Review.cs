@@ -1,8 +1,9 @@
-﻿using Selu383.SP25.P03.Api.Features.Users;
+﻿using Selu383.SP25.P03.Api.Features.Theaters;
+using Selu383.SP25.P03.Api.Features.Users;
 
 namespace Selu383.SP25.P03.Api.Features.Reviews
 {
-    public class Review
+    public class ReviewGetDto
     {
         public int Id { get; set; }
         public string review { get; set; }
@@ -11,7 +12,7 @@ namespace Selu383.SP25.P03.Api.Features.Reviews
         public int UserId { get; set; }
         public User User { get; set; }
 
-        //public Movie Movie { get; set; }
-        //public int MovieId { get; set; }
+        public Theater Theater { get; set; }
+        public int TheaterId { get; set; }
     }
 }
