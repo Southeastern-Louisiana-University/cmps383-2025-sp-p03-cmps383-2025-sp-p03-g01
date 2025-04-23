@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaTrashAlt } from "react-icons/fa";
-
 import { cartService } from "../services/CartApi";
 import { CartDto, CartItemDto, FoodCartItemDto } from "../Data/CartInterfaces";
 import { useAuth } from "../context/AuthContext";
-import { loadStripe } from "@stripe/stripe-js";
-
 
 
 const CartPage: React.FC = () => {
@@ -55,7 +52,6 @@ const CartPage: React.FC = () => {
   };
   
   useEffect(() => {
-
     if (!isAuthenticated && !userIdFromQuery) {
       navigate('/login', { state: { returnUrl: location.pathname } });
     }
@@ -92,7 +88,6 @@ const CartPage: React.FC = () => {
 
   const getTicketsTotal = () => {
     return cart?.items.reduce((acc: number, item: CartItemDto) => acc + getItemTotal(item), 0) || 0;
-
   };
 
   const getCartTotal = () => {
@@ -145,7 +140,6 @@ const CartPage: React.FC = () => {
     }
   };
 
-
   const handleClearCart = async () => {
     if (!userId) {
       setError("User ID is missing. Please log in.");
@@ -175,7 +169,6 @@ const CartPage: React.FC = () => {
 
     try {
       setLoading(true);
-<
       await cartService.clearCart(userId);
       setCart({
         id: cart?.id || 0,
@@ -259,10 +252,31 @@ const CartPage: React.FC = () => {
     }
   };
 
+  if (!userId) {
+    return (
+      <div className="bg-gradient-to-br from-gray-950 to-black min-h-screen text-white py-12 px-4 md:px-10 lg:px-24">
+        <div className="max-w-6xl mx-auto">
+          <p className="text-red-500 text-center">User ID is missing. Please log in.</p>
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={() => navigate("/login", { state: { returnUrl: location.pathname } })}
+              className="bg-blue-600 text-white hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold"
+            >
+              Go to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) return <div className="text-center text-white py-12"><p>Loading your cart...</p></div>;
+  if (error) return <p className="text-red-500 text-center py-12">{error}</p>;
+
   return (
     <div className="bg-gradient-to-br from-gray-950 to-black min-h-screen text-white py-12 px-4 md:px-10 lg:px-24">
       <div className="max-w-6xl mx-auto space-y-12">
-        <h1 className="text-4xl font-extrabold tracking-tight mb-6 text-center">Your Cart</h1>
+        <h1 className="text-4xl font-extrabold tracking-tight mb-6 text-center">Cart Summary</h1>
 
         {(!cart || (cart.items.length === 0 && (cart.foodItems || []).length === 0)) ? (
           <div className="text-center py-10 bg-gray-900 rounded-xl">
@@ -276,7 +290,6 @@ const CartPage: React.FC = () => {
           </div>
         ) : (
           <div>
-
             {/* Ticket Items */}
             {cart.items && cart.items.length > 0 && (
               <div className="mb-8">
@@ -362,10 +375,9 @@ const CartPage: React.FC = () => {
                     </div>
                   </div>
                 ))}
-
               </div>
             )}
-            
+
             {/* Cart Total */}
             <div className="bg-gray-800 rounded-xl p-6 shadow-lg mt-8">
               <div className="space-y-2 border-b border-gray-700 pb-4 mb-4">
@@ -378,7 +390,6 @@ const CartPage: React.FC = () => {
                   <span>${getFoodItemsTotal().toFixed(2)}</span>
                 </div>
               </div>
-
               <div className="flex justify-between font-bold text-xl">
                 <span>Total:</span>
                 <span>${getCartTotal().toFixed(2)}</span>
@@ -425,19 +436,8 @@ const CartPage: React.FC = () => {
                 onClick={() => navigate("/checkout", { state: { userId } })}
                 className="bg-green-600 text-white hover:bg-green-700 px-8 py-3 rounded-lg font-semibold"
                 disabled={loading}
-
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={handleCheckout}
-                className={`bg-green-600 text-white hover:bg-green-700 px-8 py-4 rounded-lg font-semibold ${
-                  loading || (!isAuthenticated && showGuestEmailInput && (!guestEmail.includes("@") || guestPassword.length < 6))
-                    ? "opacity-50 cursor-not-allowed"
-                    : ""
-                }`}
-                disabled={loading || (!isAuthenticated && showGuestEmailInput && (!guestEmail.includes("@") || guestPassword.length < 6))}
-
               >
-                {loading ? "Processing..." : "Complete Booking"}
+                Proceed to Checkout
               </button>
             </div>
           </div>
